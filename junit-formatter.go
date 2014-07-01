@@ -104,6 +104,7 @@ func JUnitReportXML(report *Report, w io.Writer) error {
 
 	// remove newline from xml.Header, because xml.MarshalIndent starts with a newline
 	writer.WriteString(xml.Header[:len(xml.Header)-1])
+	writer.WriteByte('\n')
 	writer.Write(bytes)
 	writer.WriteByte('\n')
 	writer.Flush()

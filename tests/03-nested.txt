@@ -1,0 +1,12 @@
+=== RUN TestOne
+--- PASS: TestOne (0.01 seconds)
+=== RUN TestOuter
+=== RUN TestOuter_TestInner1
+--- PASS: TestOuter_TestInner1 (0.06 seconds)
+=== RUN TestOuter_TestInner2
+--- PASS: TestOuter_TestInner2 (0.03 seconds)
+--- PASS: TestOuter (0.09 seconds)
+=== RUN TestTwo
+--- PASS: TestTwo (0.10 seconds)
+PASS
+ok      package/name 0.200s

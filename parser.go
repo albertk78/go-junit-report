@@ -22,7 +22,7 @@ type Report struct {
 type Package struct {
 	Name  string
 	Time  int
-	Tests []Test
+	Tests []*Test
 }
 
 type Test struct {
@@ -43,7 +43,8 @@ func Parse(r io.Reader) (*Report, error) {
 	report := &Report{make([]Package, 0)}
 
 	// keep track of tests we find
-	tests := make([]Test, 0)
+	tests := make([]*Test, 0)
+	testMap := make(map[string]*Test)
 
 	// current test
 	var test *Test
@@ -61,31 +62,33 @@ func Parse(r io.Reader) (*Report, error) {
 
 		if strings.HasPrefix(line, "=== RUN ") {
 			// start of a new test
-			if test != nil {
-				tests = append(tests, *test)
-			}
-
 			test = &Test{
 				Name:   line[8:],
 				Result: FAIL,
 				Output: make([]string, 0),
 			}
+
+			if _, exist := testMap[test.Name]; !exist {
+				testMap[test.Name] = test
+				tests = append(tests, test)
+			}
 		} else if matches := regexResult.FindStringSubmatch(line); len(matches) == 4 {
 			// all tests in this package are finished
-			if test != nil {
-				tests = append(tests, *test)
-				test = nil
-			}
-
 			report.Packages = append(report.Packages, Package{
 				Name:  matches[2],
 				Time:  parseTime(matches[3]),
 				Tests: tests,
 			})
 
-			tests = make([]Test, 0)
+			tests = make([]*Test, 0)
 		} else if test != nil {
 			if matches := regexStatus.FindStringSubmatch(line); len(matches) == 4 {
+				if nTest, ok := testMap[matches[2]]; ok {
+					test = nTest
+				} else {
+					test.Name = matches[2]
+				}
+
 				// test status
 				if matches[1] == "PASS" {
 					test.Result = PASS
@@ -93,7 +96,6 @@ func Parse(r io.Reader) (*Report, error) {
 					test.Result = FAIL
 				}
 
-				test.Name = matches[2]
 				test.Time = parseTime(matches[3]) * 10
 			} else if strings.HasPrefix(line, "\t") {
 				// test output
