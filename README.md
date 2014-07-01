@@ -7,7 +7,7 @@ expect junit xml reports (e.g. [Jenkins](http://jenkins-ci.org)).
 Installation
 ------------
 
-	go get github.com/jstemmer/go-junit-report
+	go get github.com/wancw/go-junit-report
 
 Usage
 -----
