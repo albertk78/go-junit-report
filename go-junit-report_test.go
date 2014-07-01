@@ -16,7 +16,7 @@ type TestCase struct {
 	report     *Report
 }
 
-var testCases []TestCase = []TestCase{
+var testCases []*TestCase = []*TestCase{
 	{
 		name:       "01-pass.txt",
 		reportName: "01-report.xml",
@@ -25,14 +25,14 @@ var testCases []TestCase = []TestCase{
 				{
 					Name: "package/name",
 					Time: 160,
-					Tests: []Test{
-						{
+					Tests: []*Test{
+						&Test{
 							Name:   "TestOne",
 							Time:   60,
 							Result: PASS,
 							Output: []string{},
 						},
-						{
+						&Test{
 							Name:   "TestTwo",
 							Time:   100,
 							Result: PASS,
@@ -51,8 +51,8 @@ var testCases []TestCase = []TestCase{
 				{
 					Name: "package/name",
 					Time: 151,
-					Tests: []Test{
-						{
+					Tests: []*Test{
+						&Test{
 							Name:   "TestOne",
 							Time:   20,
 							Result: FAIL,
@@ -63,9 +63,53 @@ var testCases []TestCase = []TestCase{
 								"\tmessage.",
 							},
 						},
-						{
+						&Test{
 							Name:   "TestTwo",
 							Time:   130,
+							Result: PASS,
+							Output: []string{},
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		name:       "03-nested.txt",
+		reportName: "03-report.xml",
+		report: &Report{
+			Packages: []Package{
+				{
+					Name: "package/name",
+					Time: 200,
+					Tests: []*Test{
+						&Test{
+							Name:   "TestOne",
+							Time:   10,
+							Result: PASS,
+							Output: []string{},
+						},
+						&Test{
+							Name:   "TestOuter",
+							Time:   90,
+							Result: PASS,
+							Output: []string{},
+						},
+						&Test{
+							Name:   "TestOuter_TestInner1",
+							Time:   60,
+							Result: PASS,
+							Output: []string{},
+						},
+						&Test{
+							Name:   "TestOuter_TestInner2",
+							Time:   30,
+							Result: PASS,
+							Output: []string{},
+						},
+						&Test{
+							Name:   "TestTwo",
+							Time:   100,
 							Result: PASS,
 							Output: []string{},
 						},
@@ -109,7 +153,10 @@ func TestParser(t *testing.T) {
 			}
 
 			if len(pkg.Tests) != len(expPkg.Tests) {
-				t.Fatalf("Package Tests == %d, want %d", len(pkg.Tests), len(expPkg.Tests))
+				t.Log(testCase.name)
+				t.Logf("%#v", pkg)
+				t.Logf("%#v", expPkg)
+				t.Logf("Package Tests == %d, want %d", len(pkg.Tests), len(expPkg.Tests))
 			}
 
 			for j, test := range pkg.Tests {
@@ -151,6 +198,7 @@ func TestJUnitFormatter(t *testing.T) {
 		}
 
 		if string(junitReport.Bytes()) != report {
+			t.Log(testCase.reportName)
 			t.Fatalf("Report xml ==\n%s, want\n%s", string(junitReport.Bytes()), report)
 		}
 	}
